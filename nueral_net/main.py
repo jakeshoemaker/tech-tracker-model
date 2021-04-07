@@ -5,10 +5,12 @@ import preprocess
 import model
 import os
 import argparse
+from training import s3_helpers
 
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('--data', type=str, required=True, help='provide the symbol of a publicly traded company. "Ex: GOOG"')
+parser.add_argument('--ckpt', type=str, required=True, default="./checkpoints/generic.ckpt")
 
 
 def predict(num_prediction, model, close_data, look_back):
@@ -35,13 +37,20 @@ def main(data):
     nn = model.get_model()
     trained_model = train.train(nn, train_generator)
 
-    look_back = 20
-    num_prediction = 30
-    forecast = predict(num_prediction, trained_model, close_data, look_back)
-    forecast_dates = predict_dates(num_prediction, dates)
+    # serialize model 
+    ckpt_path = './checkpoints/' + data + '.ckpt'
+    weight = nn.save_weights(ckpt_path)
+    # upload ckpt to s3 ---> can be loaded with model.load_weights() 
+    s3_helpers.upload_file(ckpt_path, 'tt-model-weights')
 
-    for x in range(len(forecast)):
-        print('Date: ' + str(forecast_dates[x]) + ' Predicted Value: ' + str(forecast[x]))
+
+    #look_back = 20
+    #num_prediction = 30
+    #forecast = predict(num_prediction, trained_model, close_data, look_back)
+    #forecast_dates = predict_dates(num_prediction, dates)
+
+    #for x in range(len(forecast)):
+        #print('Date: ' + str(forecast_dates[x]) + ' Predicted Value: ' + str(forecast[x]))
 
 
 if __name__=="__main__":
