@@ -61,9 +61,5 @@ def download_file(file_name, bucket, object_name=None):
     else:
         print("Error downloading file obj")
         return 0
-
-print("Testing s3 ...")
-print("Uploading this code to my s3")
-upload_file("test.txt", "tech-tracker-models-042021")
-        
+       
 

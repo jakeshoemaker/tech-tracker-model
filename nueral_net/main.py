@@ -1,58 +1,44 @@
-import pandas as pd
+import pandas as pd 
 import numpy as np
-import train
-import preprocess
-import model
-import os
+import keras
+import tensorflow as tf
+import yfinance as yf
 import argparse
-from training import s3_helpers
+import logging
+import os
+import sys
+import entry
 
 
-parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('--data', type=str, required=True, help='provide the symbol of a publicly traded company. "Ex: GOOG"')
-parser.add_argument('--ckpt', type=str, required=True, default="./checkpoints/generic.ckpt")
+
+""" The following program trains and stores trained models in a s3 bucket
+
+:param model_list: a list of company tickers
+:param bucket: the s3 bucket to upload to
+:param object_name: the obejct name, if none then file name is used
+:return: On success True, else False
+"""
+
+parser = argparse.ArgumentParser("description tech tracker model trainer")
+parser.add_argument('--models_path', type=str, default='models.txt' ,required=False, help='The list of models you would like to train')
+
+models = []
 
 
-def predict(num_prediction, model, close_data, look_back):
-    prediction_list = close_data[-look_back:]
 
-    for _ in range(num_prediction):
-        x = prediction_list[-look_back:]
-        x = x.reshape((1, look_back, 1))
-        out = model.predict(x)[0][0]
-        prediction_list = np.append(prediction_list, out)
-    prediction_list = prediction_list[look_back-1:]
+def get_list(model_path):
+    with open(os.path.join(os.path.dirname(__file__), 'models.txt')) as f:
+        for line in f:
+            line = line.strip()
+            models.append(line)
+    return models
 
-    return prediction_list
-
-
-def predict_dates(num_prediction, dates):
-    last_date = dates[-1]
-    prediction_dates = pd.date_range(last_date, periods=num_prediction+1).tolist()
-    return prediction_dates
-
-
-def main(data):
-    train_generator, test_generator, close_train, close_test, date_train, date_test, close_data, dates = preprocess.preprocess(data)
-    nn = model.get_model()
-    trained_model = train.train(nn, train_generator)
-
-    # serialize model 
-    ckpt_path = './checkpoints/' + data + '.ckpt'
-    weight = nn.save_weights(ckpt_path)
-    # upload ckpt to s3 ---> can be loaded with model.load_weights() 
-    s3_helpers.upload_file(ckpt_path, 'tt-model-weights')
-
-
-    #look_back = 20
-    #num_prediction = 30
-    #forecast = predict(num_prediction, trained_model, close_data, look_back)
-    #forecast_dates = predict_dates(num_prediction, dates)
-
-    #for x in range(len(forecast)):
-        #print('Date: ' + str(forecast_dates[x]) + ' Predicted Value: ' + str(forecast[x]))
-
+def main(models):
+    for model in models:
+        print("training {} and saving weights to s3" , model)
+        entry.main(model)
 
 if __name__=="__main__":
     args = parser.parse_args()
-    main(args.data)
+    path = get_list('models.txt')
+    main(path)
