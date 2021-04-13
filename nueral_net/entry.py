@@ -6,6 +6,7 @@ import model
 import os
 import argparse
 import s3_helpers
+import tensorflowjs as tfjs
 
 
 parser = argparse.ArgumentParser(description='Process some integers.')
@@ -38,11 +39,14 @@ def main(data):
     trained_model = train.train(nn, train_generator)
 
     # serialize model 
-    ckpt_path = './checkpoints/' + data + '.h5'
-    nn.save(ckpt_path)
-    # upload ckpt to s3 ---> can be loaded with model.load_weights() 
-    s3_helpers.upload_file(ckpt_path, 'tt-model-weights')
+    ckpt_path = './checkpoints/' + data + '/'
 
+    ## saving to tensorflow js format so model can be used in server
+    tfjs.converters.save_keras_model(nn, ckpt_path)
+    # nn.save(ckpt_path)
+    # upload ckpt to s3 ---> can be loaded with model.load_weights()
+    #for f in os.path.join(os.getcwd() , '/checkpoints')
+        #s3_helpers.upload_file(f, 'tt-model-weights')
 
     #look_back = 20
     #num_prediction = 30

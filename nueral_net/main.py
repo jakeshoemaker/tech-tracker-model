@@ -34,9 +34,11 @@ def get_list(model_path):
     return models
 
 def main(models):
-    for model in models:
-        print("training {} and saving weights to s3" , model)
-        entry.main(model)
+#    for model in models:
+#        print("training {} and saving weights to s3" , model)
+#        entry.main(model)
+
+    os.system("aws s3 cp D:\\school\\senior-project\\predictor\\nueral_net\\checkpoints  s3://tt-model-weights/ --recursive")
 
 if __name__=="__main__":
     args = parser.parse_args()
