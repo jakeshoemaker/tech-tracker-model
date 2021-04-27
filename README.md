@@ -1,4 +1,4 @@
-# Tech Tracker
+# :zap: Tech Tracker :zap: 
 
 ## Machine Learning Server Installation:
 
@@ -50,6 +50,7 @@ $ yarn
 ```
 REACT_APP_API_KEY = "insert API key here"
 ```
+** note this key can be found from https://www.quandl.com/sign-up **
 ### 5. After saving the file run the following commands in your terminal:
 ```
 npm run start
