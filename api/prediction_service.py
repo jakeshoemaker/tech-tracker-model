@@ -35,6 +35,7 @@ def get_prediction(market_id, prediction_id):
         
         # get last 100 days & scale
         last_100 = data[-100:].values
+        previous_close = last_100[-1]
         last_100_scaled = scaler.fit_transform(data[-100:].values)
 
         # creating the batch && reshaping
@@ -49,7 +50,7 @@ def get_prediction(market_id, prediction_id):
         date_tomorrow = date.today() + timedelta(days=1)
 
         print(price)
-        return price
+        return price,previous_close
     else:
         print("unknown market_id")
         return ("error")
